@@ -1,3 +1,11 @@
+"""
+This notebook references code structures and analysis ideas from
+Quang-Nguyen Vo-Huynh (https://github.com/vohuynhquangnguyen).
+
+The implementation has been independently developed and adapted
+for the PG&E Energy Analytics Challenge.
+"""
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
