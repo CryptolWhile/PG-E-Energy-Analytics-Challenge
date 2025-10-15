@@ -77,7 +77,7 @@ pip install -r requirements.txt
 1. Clone repository:
 
    ```bash
-   git clone https://github.com/<your-username>/PG-E-Energy-Analytics-Challenge.git
+   git clone https://github.com/CryptolWhile/PG-E-Energy-Analytics-Challenge.git
    cd PG-E-Energy-Analytics-Challenge
    ```
 
