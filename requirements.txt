@@ -6,3 +6,8 @@ scikit-learn==1.7.2
 openpyxl==3.1.5
 ipywidgets==8.1.5
 statsmodels==0.14.5
+jinja2==3.1.6
+holidays==0.83
+dcor==0.6
+xgboost==3.0.1
+bayesian-optimization==1.4.3
