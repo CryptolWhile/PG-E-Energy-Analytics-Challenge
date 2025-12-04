@@ -1,201 +1,138 @@
 
-# PG&E Energy Analytics Challenge
-Bảng dữ liệu trên là một phần trong bộ dữ liệu dùng cho bài toán **dự báo phụ tải điện theo giờ** trong cuộc thi **PG&E Energy Analytics Competition**. Dữ liệu được ghi nhận theo thời gian thực, thể hiện mối quan hệ giữa **thời gian**, **điều kiện thời tiết** và **mức tiêu thụ điện (Load)** tại nhiều trạm đo khác nhau trong một khu vực của California.
+# PG&E Energy Analytics Challenge: Electricity Load Forecasting
 
-
-**1. Các cột thời gian (Year, Month, Day, Hour)**
-Bốn cột đầu tiên biểu diễn thời điểm đo dữ liệu:
-
-* **Year**: Năm thứ nhất trong bộ dữ liệu huấn luyện.
-* **Month**: Tháng trong năm (1 = Tháng 1).
-* **Day**: Ngày trong tháng.
-* **Hour**: Giờ trong ngày (từ 1 đến 24).
-
-Những biến này giúp mô hình nhận biết **chu kỳ tiêu thụ điện theo thời gian** — ví dụ, phụ tải điện thường thấp vào ban đêm và cao vào ban ngày, hoặc thay đổi theo mùa.
-
-
-**2. Load (Phụ tải điện)**
-Cột **Load** thể hiện **mức tiêu thụ điện năng trung bình theo giờ** (đơn vị có thể là megawatt hoặc kilowatt tùy theo dữ liệu gốc).
-Đây là **biến mục tiêu (target)** mà mô hình cần dự báo.
-Ví dụ:
-
-* Giờ 1: Load = 1997
-* Giờ 4: Load = 1833
-  Ta thấy vào rạng sáng (giờ 1–4), phụ tải thấp dần, phản ánh quy luật sinh hoạt — ít người sử dụng điện hơn trong thời gian này.
-
-
-**3. Các cột nhiệt độ (Site-1 Temp → Site-5 Temp)**
-Các cột này là **nhiệt độ theo °C** tại 5 trạm đo khác nhau (Site 1–5) trong cùng khu vực.
-Chúng là **biến ngoại sinh (exogenous variables)**, nghĩa là ảnh hưởng đến phụ tải điện nhưng không bị ảnh hưởng ngược lại bởi nó.
-Nhiệt độ thay đổi theo thời điểm trong ngày và giữa các vị trí.
-Ví dụ:
-
-* Site-3 thường có nhiệt độ thấp hơn các site khác → có thể nằm ở vùng cao hơn.
-* Khi nhiệt độ cao, nhu cầu dùng điện cho làm mát (máy lạnh) có thể tăng, làm tăng Load.
-
-
-
-**4. Các cột GHI (Site-1 GHI → Site-5 GHI)**
-GHI (Global Horizontal Irradiance) là **tổng lượng bức xạ mặt trời chiếu lên một bề mặt nằm ngang** tại từng trạm.
-
-* Các giá trị GHI = 0 thể hiện **ban đêm hoặc rạng sáng**, khi không có ánh nắng mặt trời.
-* Khi GHI > 0 (ban ngày), có ánh sáng mặt trời → có thể ảnh hưởng đến phụ tải điện (vì điện mặt trời được khai thác).
-
-Trong đoạn dữ liệu này, từ giờ 1 đến 8, **GHI = 0** tại tất cả các trạm, cho thấy đây là **khoảng thời gian trước khi mặt trời mọc**. Điều này phù hợp với thực tế khi Load có xu hướng thấp, do hầu hết thiết bị điện chưa được sử dụng nhiều.
-
-
-
-**Tóm tắt mối quan hệ trong bảng**
-Dữ liệu cho thấy Load phụ thuộc vào ba yếu tố chính:
-
-* **Thời gian:** thể hiện chu kỳ tiêu thụ điện trong ngày và theo mùa.
-* **Nhiệt độ:** càng nóng hoặc càng lạnh, nhu cầu sử dụng điện (cho điều hòa, sưởi) càng cao.
-* **Bức xạ mặt trời (GHI):** ban ngày có nắng, hệ thống điện mặt trời phát điện nhiều → Load từ lưới giảm.
-
-Như vậy, bảng dữ liệu phản ánh rõ mối quan hệ **giữa điều kiện thời tiết và hành vi tiêu thụ điện năng**, là nền tảng để huấn luyện mô hình dự báo phụ tải điện trong thực tế.
-
-
-## 1. Mục tiêu dự án
-Dự án nhằm phân tích và mô hình hóa mối quan hệ giữa tải điện (Electrical Load) và các yếu tố môi trường bao gồm:
-- Nhiệt độ (Temperature) tại 5 trạm quan trắc (Site-1 đến Site-5).
-- Bức xạ mặt trời (Global Horizontal Irradiance – GHI) tại 5 trạm tương ứng.
-
-Mục tiêu cụ thể:
-1. Xác định mức độ tương quan giữa Load, Temperature và GHI.
-2. Trực quan hóa sự biến thiên của các biến theo thời gian, tháng và mùa.
-3. Huấn luyện mô hình Random Forest để đánh giá tầm quan trọng của từng đặc trưng (Feature Importance) trong việc dự đoán tải điện.
+Dự án này là giải pháp cho bài toán **dự báo phụ tải điện theo giờ (Hourly Electricity Load Forecasting)** thuộc cuộc thi **PG&E Energy Analytics Competition**. Dự án tập trung vào việc phân tích dữ liệu kinh doanh, xử lý đa cộng tuyến và xây dựng các mô hình học máy tiên tiến để dự báo nhu cầu tiêu thụ điện cho năm tiếp theo (Year 3) dựa trên dữ liệu lịch sử 02 năm trước đó.
 
 ---
 
-## 2. Cấu trúc thư mục
+## 1. Mô tả Dữ liệu (Dataset Description)
+
+Bộ dữ liệu ghi nhận theo thời gian thực, thể hiện mối quan hệ giữa **thời gian**, **điều kiện thời tiết** và **mức tiêu thụ điện (Load)** tại khu vực California.
+
+### 1.1. Các cột thời gian
+* **Year**: Năm thứ nhất trong bộ dữ liệu huấn luyện.
+* **Month**: Tháng trong năm (1 - 12).
+* **Day**: Ngày trong tháng.
+* **Hour**: Giờ trong ngày (1 - 24).
+> *Ý nghĩa:* Giúp mô hình nhận biết chu kỳ tiêu thụ điện theo ngày (sáng/tối) và theo mùa.
+
+### 1.2. Biến mục tiêu (Target)
+* **Load**: Mức tiêu thụ điện năng trung bình theo giờ (MW/kW).
+* **Quy luật:** Phụ tải thường thấp vào rạng sáng (giờ 1–4) và tăng cao vào ban ngày hoặc giờ cao điểm.
+
+### 1.3. Biến ngoại sinh (Exogenous Variables)
+* **Nhiệt độ (Temperature):** 5 cột (`Site-1 Temp` → `Site-5 Temp`) đo nhiệt độ (°C) tại 5 trạm quan trắc.
+    * *Tác động:* Nhiệt độ cao làm tăng nhu cầu làm mát (AC), nhiệt độ thấp làm tăng nhu cầu sưởi ấm.
+* **Bức xạ mặt trời (GHI):** 5 cột (`Site-1 GHI` → `Site-5 GHI`) đo tổng lượng bức xạ mặt trời.
+    * *Đặc điểm:* GHI = 0 vào ban đêm. GHI cao thể hiện ban ngày có nắng, ảnh hưởng đến nguồn cấp điện mặt trời và nhiệt độ môi trường.
+
+---
+
+## 2. Mục tiêu & Phương pháp luận (Goals & Methodology)
+
+### 2.1. Mục tiêu
+1. **Phân tích khám phá (EDA):** Xác định tương quan giữa Load, Temp và GHI; trực quan hóa biến thiên theo thời gian.
+2. **Xử lý dữ liệu nâng cao:** Giải quyết vấn đề đa cộng tuyến giữa các trạm đo và tạo các đặc trưng kỹ thuật (Feature Engineering).
+3. **Mô hình hóa & Dự báo:** Huấn luyện và tối ưu hóa các mô hình (XGBoost, Random Forest, SARIMAX...) để dự báo phụ tải theo nguyên tắc "day-ahead".
+
+### 2.2. Phương pháp tiếp cận (Key Techniques)
+* **Xử lý Đa cộng tuyến (Multicollinearity):** Phát hiện hiện tượng tương quan chéo rất mạnh giữa các trạm (VIF > 700). Sử dụng **Partial Least Squares (PLS)** để nén 5 biến trạm thành 1 biến đại diện (Combined_Temp, Combined_GHI).
+* **Feature Engineering:**
+    * **Time Features:** Mã hóa Sin/Cos cho chu kỳ Giờ, Tuần, Năm.
+    * **Lags & Deltas:** Tạo biến trễ (Lag 1h, 24h) và sai phân để nắm bắt xu hướng ngắn hạn.
+    * **Behavioral Features:** Tính chỉ số sưởi ấm (HDH) và làm mát (CDH) dựa trên nhiệt độ cơ sở 20°C.
+* **Chiến lược Validation:** Sử dụng **Rolling Window Cross-Validation** để tránh rò rỉ dữ liệu (data leakage) thay vì K-Fold ngẫu nhiên.
+* **Tối ưu hóa:** Sử dụng **Bayesian Optimization** để tinh chỉnh siêu tham số (Hyperparameter Tuning).
+
+---
+
+## 3. Cấu trúc thư mục
 
 ```markdown
-
 PG&E Energy Analytics Challenge/
 │
 ├── datasets/
 │   ├── training.xlsx          # Dữ liệu thô ban đầu
 │   └── training.csv           # Dữ liệu được chuyển sang định dạng CSV
 │
-├── figures/
+├── figures/                   # Chứa biểu đồ xuất ra từ quá trình phân tích
 │   ├── hourly_GHI_variation_*.pdf
 │   ├── hourly_temperature_variation_*.pdf
-│   └── hourly_electricity_load_*.pdf...
+│   └── hourly_electricity_load_*.pdf
 │
-├── site_correlations.ipynb    # Phân tích tương quan giữa Load, Temp và GHI
-├── visualization.ipynb        # Trực quan hóa xu hướng GHI, Temp, Load theo thời gian
+├── site_correlations.ipynb    # Phân tích tương quan Load, Temp, GHI và kiểm tra Đa cộng tuyến
+├── visualization.ipynb        # Trực quan hóa xu hướng và tạo các biến đặc trưng
 ├── requirements.txt           # Danh sách thư viện cần thiết
 └── README.md                  # Tài liệu hướng dẫn
+````
 
-```
+-----
 
----
+## 4\. Hướng dẫn thiết lập & Chạy (Setup & Usage)
 
-## 3. Hướng dẫn thiết lập môi trường
+### 4.1. Tạo môi trường Conda
 
-### 3.1. Tạo môi trường Conda
-Khuyến nghị sử dụng Conda để quản lý môi trường và thư viện.  
-Mở terminal hoặc Anaconda Prompt và chạy các lệnh sau:
+Khuyến nghị sử dụng Conda để quản lý môi trường Python 3.10.
 
 ```bash
 conda create -n is403 python=3.10
 conda activate is403
-````
-
-### 3.2. Cài đặt các thư viện cần thiết
-
-#### Cách 1: Cài đặt thủ công
-
-```bash
-conda install pandas numpy matplotlib seaborn scikit-learn openpyxl
 ```
 
-#### Cách 2: Sử dụng file requirements.txt
-
-Sau đó cài đặt toàn bộ thư viện bằng lệnh:
+### 4.2. Cài đặt thư viện
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+*Các thư viện chính:* `pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`, `openpyxl`, `xgboost`, `lightgbm`.
 
-## 4. Cách chạy Notebook
+### 4.3. Chạy Notebook phân tích
 
-1. Clone repository:
+1.  Clone repository:
 
-   ```bash
-   git clone https://github.com/CryptolWhile/PG-E-Energy-Analytics-Challenge.git
-   cd PG-E-Energy-Analytics-Challenge
-   ```
+    ```bash
+    git clone [https://github.com/CryptolWhile/PG-E-Energy-Analytics-Challenge.git](https://github.com/CryptolWhile/PG-E-Energy-Analytics-Challenge.git)
+    cd PG-E-Energy-Analytics-Challenge
+    ```
 
-2. Kích hoạt môi trường conda:
+2.  Chạy các file phân tích:
 
-   ```bash
-   conda activate is403
-   ```
+      * `site_correlations.ipynb`: Để xem ma trận tương quan, phân tích VIF và áp dụng PLS.
+      * `visualization.ipynb`: Để xem biến động phụ tải theo giờ/mùa và kết quả so sánh mô hình.
 
-3. Mở và chạy các file:
+-----
 
-   * `site_correlations.ipynb`: Phân tích tương quan và trực quan hóa Load, Temp, GHI.
-   * `visualization.ipynb`: Biểu đồ biến động theo thời gian và các đặc trưng trung bình.
+## 5\. Kết quả Thực nghiệm (Experimental Results)
 
----
+Dựa trên quá trình huấn luyện và kiểm thử trên dữ liệu năm thứ 3, dưới đây là kết quả so sánh giữa các mô hình:
 
-## 5. Nội dung phân tích
+### 5.1. Hiệu suất mô hình (Accuracy)
 
-### 5.1. Tiền xử lý dữ liệu
+  * **XGBoost (Optimized)** là mô hình tốt nhất với sai số thấp nhất:
+      * **MAPE:** 4.37%
+      * **RMSE:** 126.29 MW
+      * *Lý do:* Gradient Boosting xử lý tốt các mối quan hệ phi tuyến tính phức tạp giữa thời tiết và phụ tải.
+  * **Random Forest** bám đuổi sát sao với MAPE tương đương (4.37%) và MAE \~93.26 MW.
+  * **Linear Regression & SARIMAX** hoạt động kém hiệu quả (MAPE \> 9%) do không bắt được tính chất phi tuyến của dữ liệu.
 
-* Chuyển đổi giá trị `Load` từ chuỗi chứa dấu phẩy thành số thực (`float`).
-* Gom nhóm dữ liệu theo `Year`, `Month`, `Hour` để tính trung bình.
-* Loại bỏ các cột không phải số và xử lý giá trị thiếu (`NaN`).
+### 5.2. Độ ổn định & Phân phối (Stability)
 
-### 5.2. Phân tích tương quan
+  * **Energy Distance (ED):**
+      * **Random Forest** đạt chỉ số ED thấp nhất (**0.914**), thấp hơn XGBoost (1.141).
+      * *Ý nghĩa:* Random Forest mô phỏng cấu trúc phân phối xác suất và độ biến thiên của dữ liệu thực tế tốt hơn, phù hợp cho các bài toán đánh giá rủi ro.
+  * **WAPE:** Các mô hình top đầu (XGBoost, RF, AdaBoost) đều có WAPE ổn định ở mức \~4.33% - 4.36% trên toàn bộ dải công suất.
 
-* Tính hệ số tương quan Pearson giữa `Load` và:
+### 5.3. Kết luận Feature Importance
 
-  * `Site-x Temp`
-  * `Site-x GHI`
-* Vẽ biểu đồ cột thể hiện tương quan từng trạm.
-* Chuẩn hóa giá trị tương quan để so sánh mức độ ảnh hưởng tương đối.
+  * Nhóm đặc trưng **Temperature** (sau khi xử lý PLS và tạo Feature Engineering) đóng vai trò quan trọng nhất trong việc dự đoán phụ tải, ảnh hưởng mạnh hơn nhóm GHI.
+  * Các biến thời gian (Giờ, Ngày trong tuần) đóng vai trò then chốt trong việc xác định chu kỳ sinh hoạt.
 
-### 5.3. Trực quan hóa dữ liệu
+-----
 
-* Biểu đồ GHI, Temp và Load theo giờ, tháng và quý.
-* Vẽ đường trung bình (Centroid) thể hiện xu hướng tổng thể trong từng giai đoạn.
-* Xuất biểu đồ sang định dạng `.pdf` trong thư mục `figures`.
-
-### 5.4. Mô hình học máy (Random Forest)
-
-* Huấn luyện ba mô hình:
-
-  1. Temperature Only
-  2. GHI Only
-  3. All Features (Temp + GHI)
-* Đánh giá Feature Importance của từng biến đầu vào.
-* So sánh độ chính xác giữa các nhóm đặc trưng.
-
----
-
-## 6. Kết quả chính
-
-* Nhiệt độ tại các trạm có tương quan dương nhẹ (~0.4) với Load, cho thấy khi nhiệt độ tăng, phụ tải điện có xu hướng tăng do nhu cầu làm mát.
-* GHI có thể có tương quan âm nhẹ, phản ánh khi trời nắng sáng, nhu cầu chiếu sáng giảm.
-* Các trạm thể hiện mức tương quan tương đối đồng đều, trong đó Site-5 có xu hướng ảnh hưởng mạnh nhất.
-* Kết quả từ mô hình Random Forest xác nhận rằng nhóm đặc trưng Temperature có tầm ảnh hưởng lớn hơn nhóm GHI trong việc dự đoán phụ tải điện.
-
----
-
-## 7. Hướng phát triển
-
-* Bổ sung các đặc trưng thời gian như `Hour`, `Month`, `DayType`, hoặc chỉ báo thời tiết.
-* Thử nghiệm các mô hình khác như XGBoost, Gradient Boosting, hoặc LSTM cho chuỗi thời gian.
-* Sử dụng phương pháp TimeSeriesSplit để đánh giá mô hình theo chuỗi thời gian thay vì chia ngẫu nhiên.
-
----
-
-
-## 8. License
+## 6\. License
 
 The project is licensed under the MIT License.
 
+```
+```
