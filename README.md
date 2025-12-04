@@ -50,20 +50,36 @@ Bộ dữ liệu ghi nhận theo thời gian thực, thể hiện mối quan h�
 
 ```markdown
 PG&E Energy Analytics Challenge/
+
 │
-├── datasets/
-│   ├── training.xlsx          # Dữ liệu thô ban đầu
-│   └── training.csv           # Dữ liệu được chuyển sang định dạng CSV
+
+├── datasets/                # Chứa dữ liệu thô và dữ liệu đã qua xử lý (training.csv, ...)
+
+├── figures/                 # Chứa các biểu đồ phân tích (EDA plots)
+
+├── model/                   # Chứa các file mô hình đã huấn luyện (model artifacts)
+
+├── notebooks/               # Các Jupyter Notebook thử nghiệm và phát triển
+
+├── src/                     # Mã nguồn chính (Source code) cho xử lý dữ liệu và mô hình
+
+├── utils/                   # Các script tiện ích hỗ trợ (helper functions)
+
 │
-├── figures/                   # Chứa biểu đồ xuất ra từ quá trình phân tích
-│   ├── hourly_GHI_variation_*.pdf
-│   ├── hourly_temperature_variation_*.pdf
-│   └── hourly_electricity_load_*.pdf
+
+├── site_correlations.ipynb  # Notebook phân tích tương quan Load, Temp, GHI & Đa cộng tuyến
+
+├── visualization.ipynb      # Notebook trực quan hóa xu hướng dữ liệu
+
 │
-├── site_correlations.ipynb    # Phân tích tương quan Load, Temp, GHI và kiểm tra Đa cộng tuyến
-├── visualization.ipynb        # Trực quan hóa xu hướng và tạo các biến đặc trưng
-├── requirements.txt           # Danh sách thư viện cần thiết
-└── README.md                  # Tài liệu hướng dẫn
+
+├── app.py                   # Ứng dụng (VD: Streamlit/Web App) để demo dự báo
+
+├── main.py                  # Script chính để chạy luồng huấn luyện/dự báo (Entry point)
+
+├── requirements.txt         # Danh sách các thư viện Python cần thiết
+
+└── README.md                # Tài liệu hướng dẫn dự án
 ````
 
 -----
